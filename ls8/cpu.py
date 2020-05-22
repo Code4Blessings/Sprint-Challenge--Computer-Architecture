@@ -169,7 +169,7 @@ class CPU:
                 self.pc = self.reg[register]
             
             elif IR == JEQ:
-                
+                pass
             # elif IR == CALL:
             #     return_addr = self.pc + 2
             #     # Push it on the stack
