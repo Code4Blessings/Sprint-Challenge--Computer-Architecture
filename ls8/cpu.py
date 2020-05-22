@@ -10,6 +10,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc =  0
+        self.FL = 0b00000000
 
     def load(self):
         """Load a program into memory."""
@@ -53,6 +54,25 @@ class CPU:
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
         
+        elif op == "CMP":
+            #Compare the values in two registers.
+            #FL = 00000LGE
+            # * If they are equal
+            if self.reg[reg_a] == self.reg[reg_b]:
+                #set the Equal `E` flag to 1
+                self.FL = 0b00000001
+                # * If registerA is less than registerB
+            elif self.reg[reg_a] < self.reg[reg_b]:
+            # set the Less-than `L` flag to 1,
+                self.FL = 0b00000100
+            # * If registerA is greater than registerB, 
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                #set the Greater-than `G` flag to 1
+                self.FL = 0b00000010
+            #otherwise set it to 0.
+            else: 
+                self.FL = 0b00000000
+        
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -85,8 +105,11 @@ class CPU:
         PUSH = 0b01000101
         POP = 0b01000110
         SP = 7
-        CALL = 0b01010000
-        RET = 0b00010001
+        #CALL = 0b01010000
+        #RET = 0b00010001
+        CMP = 0b10100111
+        JMP = 0b01010100
+        JEQ = 0b01010101
 
         running = True
         self.reg[SP] = 0xF4
@@ -133,6 +156,20 @@ class CPU:
                 self.reg[SP] += 1
                 self.pc += 2
             
+            elif IR == CMP:
+                reg_a = self.ram[self.pc + 1]
+                reg_b = self.ram[self.pc + 2]
+                self.alu("CMP", reg_a, reg_b)
+                self.pc += 3
+            
+            elif IR == JMP:
+                # Jump to the address stored in the given register.
+                register = self.ram_read(self.pc + 1)
+                # Set the `PC` to the address stored in the given register.
+                self.pc = self.reg[register]
+            
+            elif IR == JEQ:
+                
             # elif IR == CALL:
             #     return_addr = self.pc + 2
             #     # Push it on the stack
